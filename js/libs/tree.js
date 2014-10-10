@@ -60,43 +60,6 @@
   }
 });
 
-var TreeViewChildren = React.createClass({
-  componentWillEnter: function (done) {
-    var $this = $(this.getDOMNode());
-    $this.css('display', 'none');
-    $this.slideDown(100, done);
-  },
-  componentWillLeave: function (done) {
-    var $this = $(this.getDOMNode());
-    $this.slideUp(100, done);
-  },
-  render: function () {
-    if (!this.props.childs) { return null; }
-    var childNodes = this.props.childs.map(function (child) {
-      return <TreeView key={child.name} label={child.label} name={child.name} childs={child.children}>{child.label}</TreeView>;
-    });
-    return <div className='tree-view-children'>{childNodes}</div>;
-  }
-});
+var TreeViewChildren = require('./tree-view-children')(TreeView);
 
 module.exports = TreeView;
-
-var JQuerySlide = React.createClass({
-    componentWillEnter: function(callback){
-      console.log(1);
-        var $el = $(this.getDOMNode());
-        $el.slideDown(function(){
-            callback();
-        });
-    },
-    componentWillLeave: function(callback){
-        console.log(2);
-        var $el = $(this.getDOMNode());
-        $el.slideUp(function(){
-            callback();
-        });
-    },
-    render: function(){
-      return this.transferPropsTo(this.props.component({style: {display: 'none'}}));
-    }
-});

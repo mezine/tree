@@ -13,9 +13,9 @@ var TreeApp = React.createClass({
     var childNodes = this.props.tree.children.map(function (child) {
       return <Tree key={child.name} label={child.label} name={child.name} childs={child.children}></Tree>;
     });
-    return (<div>
+    return (<div className='tree-top'>
       {childNodes}
-    </div>)
+    </div>);
   }
 });
 
