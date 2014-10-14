@@ -1,10 +1,35 @@
+*.unselectable {
+   -moz-user-select: -moz-none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+
+   /*
+     Introduced in IE 10.
+     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+   */
+   -ms-user-select: none;
+   user-select: none;
+}
+
 .tree-top {
-  border: 1px solid #EEE;
+  /*border: 1px solid #EEE;*/
 }
 
 /* the tree node's style */
 .tree-view {
   overflow-y: hidden;
+  /*border-top: 1px solid transparent;*/
+  border-bottom: 1px solid transparent;
+  border-left: 1px solid transparent;
+}
+
+.tree-view-drop-bottom {
+  border-bottom: 1px dashed silver;
+  border-left: 1px dashed silver;
+}
+
+.tree-view-drop-top {
+  border-top: 1px dashed silver;
 }
 
 /* style for the container */
@@ -17,6 +42,42 @@
   height: 0px;
 }
 */
+
+.tree-icon {
+  color: olive;
+}
+
+.tree-drop {
+  height: 0;
+  position: relative;
+  z-index: -100;
+}
+
+.tree-drop-line {
+  position: absolute;
+  height: 1px;
+  background-color: silver;
+  width: 100%;
+}
+
+.tree-drop-line-indent {
+  /*margin-left: 16px;*/
+}
+
+.tree-drop-zone-bottom {
+  position: relative;
+  height: 5px;
+  border-bottom: 1px solid white;
+}
+
+.tree-drop-zone-bottom:hover {
+  position: relative;
+  height: 5px;
+  border-bottom: 1px dashed silver;
+}
+
+.tree-drop-zone-bottom-line {
+}
 
 .tree-view-arrow {
   cursor: pointer;
@@ -86,6 +147,55 @@ http://stackoverflow.com/questions/1260122/expand-div-to-take-remaining-width
 */
 
 .tree-label {
+  font: 14px/20px arial;
   overflow: hidden;
   cursor: pointer;
+}
+
+.tree-horizontal-cursor {
+  cursor: pointer;
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 0px;
+  width: 100px;
+  border-bottom: 1px dashed #888;
+  z-index: -100;
+}
+
+.tree-vertical-cursor {
+  cursor: pointer;
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 0px;
+  width: 0px;
+  border-left: 1px dashed #888;
+  z-index: -100;
+}
+
+.tree-plus-cursor {
+  cursor: pointer;
+  display: none;
+  text-align: center;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 16px;
+  width: 16px;
+  background-color: silver;
+  color: white;
+  font: 14px/14px arial;
+  border-radius: 8px;
+}
+
+.tree-view-spacer {
+  cursor: pointer;
+}
+
+.tree-view-spacer-indent {
+  margin-left: 16px;
+  height: 2px;
 }
