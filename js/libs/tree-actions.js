@@ -2,8 +2,7 @@ var Reflux = require('reflux');
 
 var Actions = Reflux.createActions([
   'refreshTree',
-  'dragTreeNode',
-  'dropTreeNode'
+  'moveTreeNode' // source keyPath, destination keyPath
 ]);
 
 module.exports = Actions;

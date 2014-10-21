@@ -3,6 +3,7 @@
  */
 
 var React = require('react');
+var Reflux = require('reflux');
 var Tree = require('./tree');
 var TreeStore = require('./tree-store');
 var TreeDragAndDrop = require('./tree-drag-and-drop');
@@ -12,14 +13,22 @@ var TreeViewChildren = TreeView.Children;
 // console.log(TreeViewChildren);
 
 var TreeApp = React.createClass({
+  mixins: [Reflux.ListenerMixin],
   getInitialState: function () {
     return {
       dragging: null, // set to initial drag object
-      cursor: TreeStore.get().tree.cursor()
+      cursor: TreeStore.get().cursor
     };
   },
   propTypes: {
     tree: React.PropTypes.object.isRequired
+  },
+  refreshTree: function (data) {
+    console.log('refreshTree');
+    this.setState({cursor: data.cursor});
+  },
+  componentDidMount: function () {
+    this.listenTo(TreeStore, this.refreshTree);
   },
   render: function () {
     var cursor = this.state.cursor;
@@ -32,7 +41,7 @@ var TreeApp = React.createClass({
 
     // var children = <TreeViewChildren cursor={children} />;
     // <TreeViewChildren cursor={children} />
-    return (<div id="tree-top" className='tree-top unselectable' unselectable="on">
+    return (<div id="tree-top" className='tree-top tree-draggable unselectable' unselectable="on">
       <TreeViewChildren cursor={children} top={true}/>
     </div>);
   }

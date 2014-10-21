@@ -11,8 +11,6 @@
   propTypes: {
     collapsed: React.PropTypes.bool,
     defaultCollapsed: React.PropTypes.bool,
-    // label: React.PropTypes.string.isRequired,
-    // name: React.PropTypes.string.isRequired,
     cursor: React.PropTypes.object.isRequired
   },
 
@@ -25,17 +23,13 @@
 
   handleClick: function(a, b, c) {
     this.setState({collapsed: !this.state.collapsed});
-    this.props.onClick && this.props.onClick(a, b, c);
+    // this.props.onClick && this.props.onClick(a, b, c);
   },
 
-  onStartDrag: function (e) {
-    // console.log(this.props.cursor._keyPath)
-    Actions.dragTreeNode(this.props.cursor);
-  },
-
-  onMouseMoveLabel: function (e) {
-
-  },
+  // onStartDrag: function (e) {
+  //   // console.log(this.props.cursor._keyPath)
+  //   Actions.dragTreeNode(this.props.cursor);
+  // },
 
   // onMouseEnterLabel: function (e) {
   //   this.setState({drag: 'top'});
@@ -53,47 +47,46 @@
     var label = cursor.get('label');
     var children = cursor.cursor('children');
 
-    var collapsed = this.props.collapsed != null ?
-      this.props.collapsed :
-      this.state.collapsed;
-
-    var arrowClassName = 'tree-view-arrow';
-    if (collapsed) {
-      arrowClassName += ' tree-view-arrow-collapsed';
-    }
-
+    // ARROW STUFF
+    // console.log(children);
+    // console.log(name, children.length);
+    // if (name == 'lists') {
+    //   console.log(name, children.toJS());
+    // }
     var hasChildren = children && children.length;
-    var char;
+    var arrow;
+    var collapsed = false; // is in an actual collapsed mode (i.e it has children too)
     if (hasChildren) {
-      char = "V";
+      var arrowClassName = 'tree-view-arrow';
+      if (this.state.collapsed) {
+        arrowClassName += ' tree-view-arrow-collapsed';
+        collapsed = true;
+      }
+      arrow = <div className={arrowClassName} onClick={this.handleClick}>V</div>;
+    } else {
+      arrow = <div className="tree-view-arrow tree-view-arrow-none">&nbsp;</div>;
     }
-    var arrow =
-      <div className={arrowClassName} onClick={this.handleClick}>{char}</div>;
 
-    var dropZoneBottom;
+    // CHILDREN
     var treeViewChildren = null;
-
     if (hasChildren && !this.state.collapsed) {
       treeViewChildren = <TreeViewChildren cursor={children} />;
-      dropZoneBottom = <div className="tree-drop-zone-bottom"><div className="tree-drop-zone-bottom-line"></div></div>
     }
 
-    var dropTopLine;
-    if (this.state.drag == 'top') {
-      dropTopLine = <div className="tree-drop"><div className="tree-drop-line"></div></div>;
-    }
+    // console.log(cursor._keyPath, collapsed);
+    var jsonKeyPath = JSON.stringify(cursor._keyPath);
 
-    var treeViewClass = 'tree-view';
-        
     return (
-      <div className={treeViewClass} data-key-path={cursor._keyPath} data-has-children={hasChildren} data-collapsed={this.state.collapsed}>
-        {this.transferPropsTo(arrow)}
-        <div className="tree-label" onMouseDown={this.onStartDrag} onMouseMove={this.onMouseMoveLabel} onMouseEnter={this.onMouseEnterLabel} onMouseLeave={this.onMouseLeaveLabel} ref="label">
-          <i className="tree-icon fa fa-file-text-o"></i> {label}
+      <div className="tree-view" data-key-path={jsonKeyPath} data-has-children={hasChildren ? 't' : 'f'} data-collapsed={collapsed ? 't' : 'f'}>
+        {arrow}
+        <div className="tree-view-group">
+          <div className="tree-label" ref="label">
+            <i className="tree-icon fa fa-file-text-o"></i> {label}
+          </div>
+          <ReactTransitionGroup>
+            {treeViewChildren}
+          </ReactTransitionGroup>
         </div>
-        <ReactTransitionGroup>
-          {treeViewChildren}
-        </ReactTransitionGroup>
       </div>
     );
   }

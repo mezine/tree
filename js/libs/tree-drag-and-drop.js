@@ -3,151 +3,253 @@
  */
 
 var Actions = require('./tree-actions');
+var _ = require('lodash');
+var Cursor = require('./tree-cursor');
+var Highlight = require('./tree-highlight');
+var Data = require('./tree-drag-and-drop-data');
 
-var Data = {
-  dragSource: null,
-  lastDropElement: null
-};
+class TreeSpacer {
+
+  constructor($treeSpacer) {
+    this.$treeSpacer = $treeSpacer;
+  }
+
+}
 
 class TreeNode {
+
   constructor($treeView) {
     this.$treeView = $treeView;
   }
 
+  // returns the div that contains the children (not the Array of children)
   children() {
     return this.$treeView.find('.tree-view-children');
   }
 
+  // returns true if there are any children
   hasChildren() {
     return this.children().length > 0;
   }
 
   firstChild() {
-    return this.children().find('.tree-view');
+    var $treeView = $(this.children().find('.tree-view')[0]);
+    return new TreeNode($treeView);
+  }
+
+  height() {
+    return this.$treeView.find('.tree-label').height();
+  }
+
+  keyPath() {
+    if (!this._keyPath) {
+      var s = this.$treeView.attr('data-key-path');
+      this._keyPath = JSON.parse(s);
+    }
+    return this._keyPath;
+  }
+
+  isDragSource() {
+    // console.log(Data.sourceTreeNode.keyPath(), this.keyPath());
+    return _.isEqual(Data.sourceTreeNode.keyPath(), this.keyPath());
+  }
+
+  dropPosition(y) {
+    // if (this.isDragSource()) {
+    //   return null;
+    // }
+    // TODO: Make exceptions for ignoring dragging into same position or
+    // dragging into children
+    var height = this.height();
+    if (y < Math.round(height / 3)) {
+      // var prev = this.prev();
+      // if (prev && prev.isDragSource()) {
+      //   return null;
+      // } else {
+        return "top";
+      // }
+    } else if (y < Math.round(height * 2 / 3)) {
+      if (this.isDragSource()) {
+        return null;
+      }
+      return "in";
+    } else {
+      // var next = this.next();
+      // console.log('next', next);
+      // console.log('next.isDragSource()', next.isDragSource());
+      // if (next && next.isDragSource()) {
+      //   return null;
+      // } else {
+        return "bottom";
+      // }
+    }
+  }
+
+  // highlight the source dragged item
+  $getLabel() {
+    return this.$treeView.find('.tree-label');
+  }
+
+  // highlight the source dragged item
+  $getGroup() {
+    return $(this.$treeView.find('.tree-view-group')[0]);
+  }
+
+
+  dragHighlight() {
+    this.$getGroup().addClass('tree-highlight');
+    // this.$treeView.find('.tree-label').css('outline', '1px dashed silver');
+  }
+
+  dragUnhighlight() {
+    this.$getGroup().removeClass('tree-highlight');
+    // this.$treeView.find('.tree-label').css('outline', 'none'); 
+  }
+
+  // highlight the drop positions
+
+  highlightTop() {
+    Highlight.top(this.$getGroup());
+    Data.setLastDrop(this.keyPath(), 'before');
+  }
+
+  highlightBottom() {
+    Highlight.bottom(this.$getGroup());
+    Data.setLastDrop(this.keyPath(), 'after');
+  }
+
+  highlightSquareBottom() {
+    var $treeView = this.$getGroup();
+    var offset = $treeView.offset();
+    var treeViewOffset = $treeView.offset();
+    Cursor.horizontal.css({
+      display: 'block',
+      left: Math.round(offset.left),
+      top: Math.round(offset.top) + $treeView.height() + 1,
+      width: Math.round($treeView.width())
+    });
+    Cursor.vertical.css({
+      display: 'block',
+      left: Math.round(treeViewOffset.left),
+      top: Math.round(treeViewOffset.top) + 16,
+      height: Math.round($treeView.height() - 16)
+    });
+    Cursor.plus.hide();
+    Data.setLastDrop(this.keyPath(), 'after');
+  }
+
+  highlightIn() {
+    var $treeIcon = this.$treeView.find('.tree-icon');
+    var treeIconOffset = $treeIcon.offset();
+    Cursor.plus.css({
+      display: 'block',
+      left: Math.round(treeIconOffset.left) - 2,
+      top: treeIconOffset.top - 1
+    });
+    Cursor.vertical.hide();
+    Cursor.horizontal.hide();
+    Data.setLastDrop(this.keyPath(), 'in');
   }
 
   prev() {
     var $prevTreeView = this.$treeView.prev('.tree-view');
-    var prevTreeNode = new TreeNode($prevTreeView);
-    return prevTreeNode;
+    if ($prevTreeView.length) {
+      var prevTreeNode = new TreeNode($prevTreeView);
+      return prevTreeNode;
+    } else {
+      return null;      
+    }
   }
 
-}
-
-function hasChildren($treeView) {
-  var children = $treeView.find('.tree-view-children');
-  return children.length > 0;
-}
-
-var $horizontalCursor, $verticalCursor, $plusCursor;
-
-var Position = {
-  keys: null, // array of keys
-  relativeLocation: null // 'before', 'after' or 'child'
-};
-
-function setPosition(keys, relativeLocation) {
+  next() {
+    var $nextTreeView = this.$treeView.next('.tree-view');    
+    if ($nextTreeView.length) {
+      return new TreeNode($nextTreeView);
+    } else {
+      return null;
+    }
+  }
 
 }
 
 var TreeDragAndDrop = {
   start: function (dragSource) {
-    Data.dragSource = dragSource;
+    $node = $('#tree-top');
+    $node.on('mousedown', '.tree-label', This.startDrag);
+  },
+  startDrag: function (jqEvent) {
+    var $label = $(jqEvent.currentTarget);
+    var $treeView = $label.parents('.tree-view').first();
+    Data.sourceTreeNode = new TreeNode($treeView);
+    Data.sourceTreeNode.dragHighlight();
     This.mount();
   },
-  setup: function () {
-    if (!$horizontalCursor) {
-      $horizontalCursor = $('<div class="tree-horizontal-cursor"></div>');
-      $verticalCursor = $('<div class="tree-vertical-cursor"></div>');
-      $plusCursor = $('<div class="tree-plus-cursor">+</div>');
-      $(document.body).append($horizontalCursor).append($plusCursor).append($verticalCursor);
-    }
-  },
   mount: function () {
-    this.setup();
+    Cursor.trySetup();
     var $node = $('#tree-top');
-    $node.on('mousemove', '.tree-label', This.onMouseMoveLabel);
+    $node.addClass('tree-droppable');
+    var a = $node.on('mousemove', '.tree-label', This.onMouseMoveLabel);
+    console.log(a);
     $node.on('mousemove', '.tree-view-spacer', This.onMouseMoveSpacer);
     $node.on('mouseleave', This.onMouseLeave);
-    // $(document.body).on('mouseup', This.unmount);
+    $(document.body).on('mouseup', This.onMouseUp);
   },
   unmount: function () {
     var $node = $('#tree-top');
+    $node.removeClass('tree-droppable');
     $node.off('mousemove', '.tree-label', This.onMouseMoveLabel);
     $node.off('mousemove', '.tree-view-spacer', This.onMouseMoveSpacer);
     $node.off('mouseleave', This.onMouseLeave);
-    This.hideCursors();
+    Cursor.hide();
+    Data.sourceTreeNode.dragUnhighlight();
+  },
+  onMouseUp: function () {
+    Actions.moveTreeNode(Data.sourceTreeNode.keyPath(), Data.lastKeyPath, Data.lastRelativePos);
+    This.unmount();
   },
   onMouseLeave: function () {
-    This.hideCursors();
-  },
-  hideCursors: function () {
-    This.hidePlusCursor();
-    This.hideVerticalCursor();
-    This.hideHorizontalCursor();
+    Cursor.hide();
   },
   onMouseMoveSpacer: function (jqEvent) {
     var $spacer = $(jqEvent.currentTarget);
-    var $treeView = $spacer.parents('.tree-view');
-    This.highlightSquareViewBottom($treeView);
+    var $treeView = $spacer.parents('.tree-view').first();
+    var treeNode = new TreeNode($treeView);
+    treeNode.highlightSquareBottom();
   },
   onMouseMoveLabel: function (jqEvent) {
-    var $label = $(jqEvent.currentTarget);
-    var labelOffset = $label.offset();
-    var labelWidth = $label.width();
-    var labelHeight = $label.height();
     var y = jqEvent.offsetY;
-
-    var $treeView = $label.parent('.tree-view');
+    var $label = $(jqEvent.currentTarget);
+    var $treeView = $label.parents('.tree-view').first();
+    // console.log($treeView);
     var treeNode = new TreeNode($treeView);
-    // console.log(treeNode.relativeLocation(jqEvent.offsetY));
+    var dropPosition = treeNode.dropPosition(jqEvent.offsetY);
 
-    var dropPosition;
-    var dropMiddleMode = 'ignore'; // ignore, openPage, createSubPage
-    var topY, bottomY;
-    if (dropMiddleMode == 'ignore') {
-      topY = Math.round(labelHeight / 2);
-      if (y <= topY) {
-        dropPosition = 'top';
-      } else {
-        dropPosition = 'bottom';
-      }
-    } else {
-      topY = Math.round(labelHeight / 4);
-      bottomY = Math.round(topY*3);
-
-      if (y <= topY) {
-        dropPosition = 'top';
-      } else if (y < bottomY) {
-        dropPosition = 'in';
-      } else {
-        dropPosition = 'bottom';
-      }
-    }
-
-
-    var cursorLeft, cursorTop, cursorWidth;
-
+    // DROP INTO
+    if (dropPosition === 'in') {
+      treeNode.highlightIn();
+    } else if (dropPosition == 'top') {
     // TOP OF NODE
-    if (dropPosition == 'top') {
+      // console.log('top');
       var prevTreeNode = treeNode.prev();
       
-      if (prevTreeNode.hasChildren()) {
-        This.highlightSquareViewBottom(prevTreeNode.$treeView);
+      if (prevTreeNode && prevTreeNode.hasChildren()) {
+        prevTreeNode.highlightSquareBottom();
+        // This.highlightSquareViewBottom(prevTreeNode.$treeView);
       } else {
-        This.highlightViewTop(treeNode.$treeView);
+        treeNode.highlightTop();
       }
     // BOTTOM...
     } else if (dropPosition == 'bottom') {
       
       // TOP OF FIRST CHILD
       if (treeNode.hasChildren()) {
-        This.highlightViewTop(treeNode.firstChild());
+        treeNode.firstChild().highlightTop();
       } else {
-        // IF NOT FOUND THEN TOP OF NEXT SIBLING
-        var $nextTreeView = $treeView.next('.tree-view');
-        if ($nextTreeView.length > 0) {
-          This.highlightViewTop($nextTreeView);
+      // IF NO CHILDREN
+        var nextTreeNode = treeNode.next();
+        // IF THERE IS A NEXT NODE, HIGHLIGHT IT
+        if (nextTreeNode) {
+          nextTreeNode.highlightTop();
         } else {
           // IF NOT FOUND THEN TOP OF SPACER
           var $spacerIndent = $treeView
@@ -155,85 +257,20 @@ var TreeDragAndDrop = {
             .next('.tree-view-spacer')
             .find('.tree-view-spacer-indent');
           if ($spacerIndent.length > 0) {
-            This.highlightViewTop($spacerIndent);
+            Highlight.top($spacerIndent);
+            Data.setLastDrop(treeNode.keyPath(), 'after');
           } else {
-            This.highlightBottom($treeView)
+            treeNode.highlightBottom();
           }
         }
       }
     } else {
-      This.unhighlight();
+      Cursor.hide();
     }
-  },
-  highlightViewTop: function ($treeView) {
-    var offset = $treeView.offset();
-    $horizontalCursor.css({
-      display: 'block',
-      left: Math.round(offset.left),
-      top: Math.round(offset.top),
-      width: Math.round($treeView.width())
-    });
-    This.hideVerticalCursor();
-    This.hidePlusCursor();
-  },
-  // special case where we want to highlight the bottom of the last top
-  // level $treeView. Normally, we'd highlight the top of the next, but
-  // in the case of the last, we can't do it.
-  highlightBottom: function ($treeView) {
-    var offset = $treeView.offset();
-    $horizontalCursor.css({
-      display: 'block',
-      left: Math.round(offset.left),
-      top: Math.round(offset.top + $treeView.height()),
-      width: Math.round($treeView.width())
-    });
-    This.hideVerticalCursor();
-    This.hidePlusCursor();
-  },
-  // highlight the squared off bottom of an open $treeView
-  highlightSquareViewBottom: function ($treeView) {
-    var offset = $treeView.offset();
-    var treeViewOffset = $treeView.offset();
-    $horizontalCursor.css({
-      display: 'block',
-      left: Math.round(offset.left),
-      top: Math.round(offset.top) + $treeView.height() + 1,
-      width: Math.round($treeView.width())
-    });
-    $verticalCursor.css({
-      display: 'block',
-      left: Math.round(treeViewOffset.left),
-      top: Math.round(treeViewOffset.top) + 16,
-      height: Math.round($treeView.height() - 16)
-    });
-    This.hidePlusCursor();
-  },
-  hidePlusCursor: function () {
-    $plusCursor.css({
-      display: 'none'
-    });
-  },
-  hideVerticalCursor: function () {
-    $verticalCursor.css({
-      display: 'none'
-    });
-  },
-  hideHorizontalCursor: function () {
-    $horizontalCursor.css({
-      display: 'none'
-    });
-  },
-  unhighlight: function () {
-    $horizontalCursor.css({display: 'none'});
-    $plusCursor.css({display: 'none'});
   }
 };
 
 This = TreeDragAndDrop;
-
-// Actions.dragTreeNode.listen(TreeDragAndDrop.start);
-
-// TreeDragAndDrop.start();
 
 module.exports = TreeDragAndDrop;
 

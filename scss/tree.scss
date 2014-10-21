@@ -1,0 +1,110 @@
+@mixin transform($value) {
+  -webkit-transform: $value;
+  -moz-transform: $value;
+  -ms-transform: $value;
+  transform: $value;
+}
+
+@mixin user-select($value) {
+  -webkit-user-select: $value;
+  -moz-user-select: $value;
+  -ms-user-select: $value;
+  user-select: $value;
+}
+
+@import "tree-cursor";
+
+.tree-top {
+  pointer: default;
+}
+
+/* the tree node's style */
+.tree-view {
+  overflow-y: hidden;
+}
+
+.tree-view-group {
+  float: left;
+}
+
+.tree-highlight {
+  border: 1px solid silver;
+  // background-color: #EEE;
+}
+
+/* style for the container that includes children and spacer */
+.tree-view-children-container {
+  overflow: hidden;
+}
+
+.tree-view-children {
+}
+
+.tree-icon {
+  color: olive;
+}
+
+.tree-draggable {
+  .tree-icon {
+    // TODO: This is currently not cross browser. Might only work in Chrome.
+    //
+    // Check out this post:
+    // http://blog.vjeux.com/2012/css/css-cross-browser-drag-cursor.html
+    cursor: move;
+  }
+}
+
+.tree-droppable {
+  .tree-label, .tree-icon {
+    cursor: default;
+  }
+}
+
+.tree-view-arrow {
+  @include user-select(none);
+  cursor: pointer;
+  margin-right: 6px;
+  display: inline-block;
+  width: 10px;
+  float: left;
+}
+
+/* rotate the triangle to close it */
+.tree-view-arrow-collapsed {
+  @include transform(rotate(-90deg));
+}
+
+.tree-view-no-arrow-none {
+  cursor: default;
+}
+
+
+/* Why overflow: hidden; Also see float: left on arrow
+http://stackoverflow.com/questions/1260122/expand-div-to-take-remaining-width
+*/
+
+.tree-label {
+  font: 14px/20px arial;
+  overflow: hidden;
+  height: 20px;
+  cursor: pointer;
+}
+
+/* SPACER */
+
+.tree-view-spacer {
+  cursor: default;
+}
+
+.tree-view-spacer-indent {
+  margin-left: 16px;
+  height: 2px;
+}
+
+
+
+
+
+
+
+

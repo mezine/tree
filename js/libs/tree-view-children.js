@@ -26,7 +26,7 @@ module.exports = function (Tree) {
           <div className='tree-view-spacer-indent'></div>
         </div>;
       }
-      return <div>
+      return <div className='tree-view-children-container'>
           <div className='tree-view-children'>
             {childNodes}
           </div>

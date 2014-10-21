@@ -19,7 +19,8 @@
     "reflux": "~0.1.7",
     "lodash": "~2.4.1",
     "rrouter": "~0.4.2",
-    "bluebird": "~2.3.2"
+    "bluebird": "~2.3.2",
+    "gulp-sass": "~1.2.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

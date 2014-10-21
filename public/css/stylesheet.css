@@ -1,0 +1,108 @@
+/* UNSELECTABLE */
+*.unselectable {
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+  /*
+     Introduced in IE 10.
+     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+   */
+  -ms-user-select: none;
+  user-select: none; }
+
+/* CURSOR */
+.tree-cursor-base, .tree-horizontal-cursor, .tree-vertical-cursor {
+  cursor: default;
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 0px;
+  width: 0px;
+  z-index: -100; }
+
+.tree-horizontal-cursor {
+  border-bottom: 1px dashed #888; }
+
+.tree-vertical-cursor {
+  border-left: 1px dashed #888; }
+
+.tree-plus-cursor {
+  cursor: default;
+  display: none;
+  text-align: center;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 16px;
+  width: 16px;
+  color: #090;
+  font: bold 20px/20px arial; }
+
+.tree-top {
+  pointer: default; }
+
+/* the tree node's style */
+.tree-view {
+  overflow-y: hidden; }
+
+.tree-view-group {
+  float: left; }
+
+.tree-highlight {
+  border: 1px solid silver; }
+
+/* style for the container that includes children and spacer */
+.tree-view-children-container {
+  overflow: hidden; }
+
+.tree-icon {
+  color: olive; }
+
+.tree-draggable .tree-icon {
+  cursor: move; }
+
+.tree-droppable .tree-label, .tree-droppable .tree-icon {
+  cursor: default; }
+
+.tree-view-arrow {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  margin-right: 6px;
+  display: inline-block;
+  width: 10px;
+  float: left; }
+
+/* rotate the triangle to close it */
+.tree-view-arrow-collapsed {
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  transform: rotate(-90deg); }
+
+.tree-view-no-arrow-none {
+  cursor: default; }
+
+/* Why overflow: hidden; Also see float: left on arrow
+http://stackoverflow.com/questions/1260122/expand-div-to-take-remaining-width
+*/
+.tree-label {
+  font: 14px/20px arial;
+  overflow: hidden;
+  height: 20px;
+  cursor: pointer; }
+
+/* SPACER */
+.tree-view-spacer {
+  cursor: default; }
+
+.tree-view-spacer-indent {
+  margin-left: 16px;
+  height: 2px; }
+
+#top-bar {
+  margin-bottom: 25px; }
